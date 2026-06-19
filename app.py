@@ -89,12 +89,14 @@ def register():
         username = form.username.data
         password = form.password.data
         admin_key_input = form.admin_key.data
-        
-        SECRET_REG_KEY = os.getenv("ADMIN_REGISTRATION_KEY", "SuperSecretKey999!")
+
+        # Force strict environment lookup with NO plaintext fallback string
+        SECRET_REG_KEY = os.getenv("ADMIN_REGISTRATION_KEY")
 
         if username.lower() == "admin":
-            if admin_key_input != SECRET_REG_KEY:
-                log_security_event("WARNING", username, "Unauthorized Registration Attempt - Invalid Secret Key")
+            # Defensively fail if the system admin forgot to set the environment variable or key doesn't match
+            if not SECRET_REG_KEY or admin_key_input != SECRET_REG_KEY:
+                log_security_event("WARNING", username, "Unauthorized Registration Attempt - Invalid or Missing Secret Key")
                 flash('Unauthorized! A valid Admin Registration Key is required to create an admin account.', 'danger')
                 return render_template('register.html', form=form)
 
