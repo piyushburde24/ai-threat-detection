@@ -48,6 +48,7 @@ class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=25)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password', message="Passwords must match")])
+    admin_key = PasswordField('Admin Registration Key (Optional)') # Added field for restriction
     submit = SubmitField('Register')
 
 def log_security_event(level, username, message):
@@ -86,7 +87,18 @@ def register():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
+        admin_key_input = form.admin_key.data
         
+        # Define the system's secret admin registration token via Environment Variable
+        SECRET_REG_KEY = os.getenv("ADMIN_REGISTRATION_KEY", "SuperSecretKey999!")
+
+        # RESTRICTION LOGIC: If trying to register as admin, validate the key
+        if username.lower() == "admin":
+            if admin_key_input != SECRET_REG_KEY:
+                log_security_event("WARNING", username, "Unauthorized Registration Attempt - Invalid Secret Key")
+                flash('Unauthorized! A valid Admin Registration Key is required to create an admin account.', 'danger')
+                return render_template('register.html', form=form)
+
         # Secure Password Hashing via Bcrypt
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 

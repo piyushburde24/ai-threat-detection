@@ -30,6 +30,11 @@
                     {{ form.confirm_password.label(class="form-label") }}
                     {{ form.confirm_password(class="form-control") }}
                 </div>
+                <div class="mb-3 p-2 border rounded bg-white">
+                    {{ form.admin_key.label(class="form-label text-muted small") }}
+                    {{ form.admin_key(class="form-control form-control-sm") }}
+                    <div class="form-text text-danger" style="font-size: 10px;">Required *only* for registering administrative privileges.</div>
+                </div>
                 {{ form.submit(class="btn btn-success w-100 mb-2") }}
                 <a href="{{ url_for('login') }}" class="btn btn-outline-secondary w-100">Back to Login</a>
             </form>
